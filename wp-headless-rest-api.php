@@ -139,23 +139,23 @@ class Headless_REST_Controller extends WP_REST_Posts_Controller
         return $menu;
     }
 
-	/**
-	 * Prepares a single post output for response.
-	 *
-	 * @since 4.7.0
-	 * @access public
-	 *
-	 * @param WP_Post         $post    Post object.
-	 * @param WP_REST_Request $request Request object.
-	 * @return WP_REST_Response Response object.
-	 */
-	public function prepare_item_for_response( $post, $request ) {
-		$GLOBALS['post'] = $post;
+    /**
+     * Prepares a single post output for response.
+     *
+     * @since 4.7.0
+     * @access public
+     *
+     * @param WP_Post         $post    Post object.
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response Response object.
+     */
+    public function prepare_item_for_response( $post, $request ) {
+        $GLOBALS['post'] = $post;
 
-		setup_postdata( $post );
+        setup_postdata( $post );
 
-		// Base fields for every post.
-		$data = array();
+        // Base fields for every post.
+        $data = array();
 
         $data['id'] = $post->ID;
         $data['date'] = $this->prepare_date_response( $post->post_date_gmt, $post->post_date );
@@ -188,39 +188,39 @@ class Headless_REST_Controller extends WP_REST_Posts_Controller
             $data['format'] = 'standard';
         }
 
-		$taxonomies = wp_list_filter(
+        $taxonomies = wp_list_filter(
             get_object_taxonomies( $this->post_type, 'objects' ),
             array( 'show_in_rest' => true )
         );
 
-		foreach ( $taxonomies as $taxonomy ) {
-			$base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+        foreach ( $taxonomies as $taxonomy ) {
+            $base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
             $terms = get_the_terms( $post, $taxonomy->name );
             $data[ $base ] = $terms ? array_values( wp_list_pluck( $terms, 'term_id' ) ) : array();
-		}
+        }
 
-		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
-		$data    = $this->add_additional_fields_to_object( $data, $request );
-		$data    = $this->filter_response_by_context( $data, $context );
+        $context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+        $data    = $this->add_additional_fields_to_object( $data, $request );
+        $data    = $this->filter_response_by_context( $data, $context );
 
-		// Wrap the data in a response object.
-		$response = rest_ensure_response( $data );
+        // Wrap the data in a response object.
+        $response = rest_ensure_response( $data );
 
-		$response->add_links( $this->prepare_links( $post ) );
+        $response->add_links( $this->prepare_links( $post ) );
 
-		/**
-		 * Filters the post data for a response.
-		 *
-		 * The dynamic portion of the hook name, `$this->post_type`, refers to the post type slug.
-		 *
-		 * @since 4.7.0
-		 *
-		 * @param WP_REST_Response $response The response object.
-		 * @param WP_Post          $post     Post object.
-		 * @param WP_REST_Request  $request  Request object.
-		 */
-		return apply_filters( "rest_prepare_{$this->post_type}", $response, $post, $request );
-	}
+        /**
+         * Filters the post data for a response.
+         *
+         * The dynamic portion of the hook name, `$this->post_type`, refers to the post type slug.
+         *
+         * @since 4.7.0
+         *
+         * @param WP_REST_Response $response The response object.
+         * @param WP_Post          $post     Post object.
+         * @param WP_REST_Request  $request  Request object.
+         */
+        return apply_filters( "rest_prepare_{$this->post_type}", $response, $post, $request );
+    }
 }
 
 function headless_register_rest_routes () {
